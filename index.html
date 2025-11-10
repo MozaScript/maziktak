@@ -40,7 +40,7 @@ footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
   </div>
   <div>
     <label>Sustain</label>
-    <input type="checkbox" id="sustainChk" checked>
+    <input type="checkbox" id="sustainChk">
   </div>
 </div>
 
@@ -134,11 +134,9 @@ function stopNote(freq){
   const note=activeNotes.get(freq);
   if(note){
     if(sustainChk.checked){
-      // يبقى الصوت مستمر لمدة قصيرة بعد رفع الزر
-      setTimeout(()=>{
-        note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
-        setTimeout(()=>note.osc.stop(),350);
-      },500);
+      // الصوت يستمر فترة قصيرة بعد رفع الزر لكن اللون يرجع فورًا
+      note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
+      setTimeout(()=>note.osc.stop(),350);
     }else{
       note.gain.gain.cancelScheduledValues(ctx.currentTime);
       note.gain.gain.setValueAtTime(note.gain.gain.value,ctx.currentTime);
@@ -153,7 +151,7 @@ function stopNote(freq){
 // كيبورد الكمبيوتر
 document.addEventListener('keydown',e=>{
   let key=e.key.toLowerCase();
-  if(e.shiftKey) key='#'+key; // للأزرار السوداء
+  if(e.shiftKey) key='#'+key;
   keys.forEach(k=>{if(k.kb===key) playNote(k.freq);});
 });
 document.addEventListener('keyup',e=>{
