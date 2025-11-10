@@ -1,552 +1,169 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>مزيكتك — أورج</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مزيكتك — أورج 24 مفتاح</title>
 <style>
-  :root{
-    --bg:#0f1724; --panel:#0b1220; --accent:#ff8a00; --text:#e6eef8;
-    --key-white:#fff; --key-black:#111;
-  }
-  *{box-sizing:border-box;font-family:Inter, Arial, sans-serif}
-  body{margin:0;min-height:100vh;background:linear-gradient(180deg,#071022 0%, #0f1724 100%);color:var(--text);display:flex;flex-direction:column;align-items:center;padding:14px;}
-  header{display:flex;gap:12px;align-items:center;width:100%;max-width:1200px}
-  h1{font-family: "Pacifico", cursive;margin:0;color:var(--accent);font-size:1.8rem}
-  .top-right{margin-left:auto;font-size:0.9rem;color:#9fb3d8}
-  .container{width:100%;max-width:1200px;margin-top:12px;display:flex;gap:12px;flex-direction:column}
-  .controls{display:flex;gap:10px;flex-wrap:wrap;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px}
-  .group{display:flex;flex-direction:column;gap:6px}
-  label.small{font-size:0.8rem;color:#cfe1ff}
-  input[type=range]{width:150px}
-  select, button, input[type=checkbox]{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:6px;border-radius:6px}
-  button{cursor:pointer}
-  .keyboard-wrap{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px;border-radius:10px}
-  .keyboard{position:relative;height:200px;touch-action:none;user-select:none;display:flex}
-  .key.white{flex:1;border:1px solid rgba(0,0,0,0.12);background:var(--key-white);height:100%;position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-weight:600;color:#111}
-  .key.white.active{background:#ffd89a}
-  .key.black{width:56px;height:120px;background:var(--key-black);position:absolute;z-index:2;margin-left:-28px;border-radius:4px;color:#fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
-  .key.black.active{background:#ffb74d}
-  .drawbars{display:flex;gap:6px;align-items:flex-end;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
-  .drawbar{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .drawbar input[type=range]{transform:rotate(-90deg);width:110px}
-  .row-actions{display:flex;gap:8px;align-items:center}
-  .rec-indicator{width:10px;height:10px;border-radius:50%;background:darkred;opacity:0.25}
-  .rec-indicator.recording{opacity:1;box-shadow:0 0 8px #ff5252}
-  footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8}
-  @media(max-width:700px){
-    .key.black{width:36px;margin-left:-18px}
-    .key.white{font-size:12px}
-  }
+  body{margin:0;font-family:sans-serif;background:#0f1724;color:#fff;display:flex;flex-direction:column;align-items:center;padding:10px;}
+  h1{color:#ff8a00;margin-bottom:10px;font-family:"Pacifico",cursive;}
+  .keyboard{display:flex;position:relative;width:100%;max-width:1000px;height:200px;margin:10px 0;user-select:none;touch-action:none;}
+  .key.white{flex:1;background:#fff;height:100%;border:1px solid #000;position:relative;display:flex;align-items:flex-end;justify-content:center;color:#000;font-weight:600;cursor:pointer;}
+  .key.black{width:40px;height:120px;background:#111;color:#fff;position:absolute;z-index:2;top:0;border-radius:4px;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;}
+  .key.white.active{background:#ffd89a;}
+  .key.black.active{background:#ffb74d;}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;}
+  label{font-size:0.85rem;margin-bottom:4px;display:block;}
+  input[type=range]{width:120px;}
+  select, input[type=checkbox], button{background:rgba(255,255,255,0.02);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:6px;border-radius:6px;}
+  button{cursor:pointer;}
+  footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <h1>مزيكتك — أورج</h1>
-    <div class="top-right">لمس / كليك لتشغيل — يدعم تسجيل وصنع نغمات</div>
-  </header>
 
-  <div class="container">
-    <div class="controls">
-      <div class="group">
-        <label class="small">نوع الموجة</label>
-        <select id="waveType">
-          <option value="sine">Sine (ناعم)</option>
-          <option value="sawtooth" selected>Sawtooth (أورج)</option>
-          <option value="square">Square (حاد)</option>
-          <option value="triangle">Triangle</option>
-        </select>
-      </div>
+<h1>مزيكتك — أورج</h1>
 
-      <div class="group">
-        <label class="small">حجم عام</label>
-        <input id="masterGain" type="range" min="0" max="1" step="0.01" value="0.6">
-      </div>
-
-      <div class="group">
-        <label class="small">حجم القلم (velocity)</label>
-        <input id="velGain" type="range" min="0.1" max="2" step="0.01" value="1">
-      </div>
-
-      <div class="group">
-        <label class="small">Sustain (مستمر)</label>
-        <input id="sustainChk" type="checkbox" checked>
-      </div>
-
-      <div class="group">
-        <label class="small">Vibrato Depth</label>
-        <input id="vibDepth" type="range" min="0" max="50" step="1" value="8">
-      </div>
-
-      <div class="group">
-        <label class="small">Vibrato Rate (Hz)</label>
-        <input id="vibRate" type="range" min="0" max="15" step="0.1" value="5">
-      </div>
-
-      <div class="group">
-        <label class="small">Attack (ms)</label>
-        <input id="attack" type="range" min="0" max="500" step="10" value="8">
-      </div>
-
-      <div class="group">
-        <label class="small">Release (ms)</label>
-        <input id="release" type="range" min="10" max="1500" step="10" value="180">
-      </div>
-
-      <div class="group drawbars" title="قم بتحريك الشفّرات لتشكيل الصوت">
-        <!-- 9 drawbars typical organ: but we'll provide 5 for simplicity -->
-        <div class="drawbar">
-          <div style="font-size:0.85rem">1</div>
-          <input class="db" type="range" min="0" max="1" step="0.05" value="0.9" data-harm="1">
-        </div>
-        <div class="drawbar">
-          <div style="font-size:0.85rem">2</div>
-          <input class="db" type="range" min="0" max="1" step="0.05" value="0.8" data-harm="2">
-        </div>
-        <div class="drawbar">
-          <div style="font-size:0.85rem">3</div>
-          <input class="db" type="range" min="0" max="1" step="0.05" value="0.6" data-harm="3">
-        </div>
-        <div class="drawbar">
-          <div style="font-size:0.85rem">4</div>
-          <input class="db" type="range" min="0" max="1" step="0.05" value="0.4" data-harm="4">
-        </div>
-        <div class="drawbar">
-          <div style="font-size:0.85rem">5</div>
-          <input class="db" type="range" min="0" max="1" step="0.05" value="0.25" data-harm="5">
-        </div>
-      </div>
-
-      <div class="row-actions" style="margin-left:auto">
-        <button id="recBtn">تسجيل</button>
-        <div class="rec-indicator" id="recDot"></div>
-        <button id="playBtn">تشغيل التسجيل</button>
-        <button id="saveBtn">حفظ WAV</button>
-        <button id="clearAll">مسح الكل</button>
-      </div>
-    </div>
-
-    <div class="keyboard-wrap">
-      <div id="keyboard" class="keyboard"></div>
-    </div>
-
+<div class="controls">
+  <div>
+    <label>نوع الموجة</label>
+    <select id="waveType">
+      <option value="sine">Sine</option>
+      <option value="square">Square</option>
+      <option value="triangle">Triangle</option>
+      <option value="sawtooth" selected>Sawtooth</option>
+    </select>
   </div>
+  <div>
+    <label>حجم عام</label>
+    <input type="range" id="masterGain" min="0" max="1" step="0.01" value="0.6">
+  </div>
+  <div>
+    <label>Sustain</label>
+    <input type="checkbox" id="sustainChk" checked>
+  </div>
+</div>
 
-  <footer>ملاحظة: استعمل لوحة المفاتيح أو اللمس — مفاتيح من C3 لغاية B4 (مفتاح المسافة لبايس)</footer>
+<div class="keyboard" id="keyboard"></div>
+
+<footer>استعمل الماوس أو لوحة المفاتيح (مفتاح المسافة للباس)</footer>
 
 <script>
-/* ======== إعداد WebAudio ======== */
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-const ctxAudio = new AudioCtx();
-const master = ctxAudio.createGain();
-master.gain.value = 0.6;
-master.connect(ctxAudio.destination);
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = ctx.createGain();
+masterGain.gain.value = 0.6;
+masterGain.connect(ctx.destination);
 
-/* للمسجل (سجل صوتي من master) */
-const dest = ctxAudio.createMediaStreamDestination();
-master.connect(dest);
-let mediaRecorder, recordedChunks = [];
-
-/* إعدادات واجهة */
-const waveType = document.getElementById('waveType');
-const masterGain = document.getElementById('masterGain');
-const velGain = document.getElementById('velGain');
+const waveSelect = document.getElementById('waveType');
+const masterInput = document.getElementById('masterGain');
 const sustainChk = document.getElementById('sustainChk');
-const vibDepth = document.getElementById('vibDepth');
-const vibRate = document.getElementById('vibRate');
-const attackEl = document.getElementById('attack');
-const releaseEl = document.getElementById('release');
-const dbSliders = document.querySelectorAll('.db');
 
-masterGain.addEventListener('input', e => master.gain.value = parseFloat(e.target.value));
+masterInput.addEventListener('input', e => masterGain.gain.value = parseFloat(e.target.value));
 
-/* خريطة النغمات (C3=130.81Hz تقريب) */
 const baseNotes = [
-  {name:'C3',freq:130.8128},{name:'C#3',freq:138.5913},{name:'D3',freq:146.8324},
-  {name:'D#3',freq:155.5635},{name:'E3',freq:164.8138},{name:'F3',freq:174.6141},
-  {name:'F#3',freq:184.9972},{name:'G3',freq:195.9977},{name:'G#3',freq:207.6523},
-  {name:'A3',freq:220.0000},{name:'A#3',freq:233.0819},{name:'B3',freq:246.9417},
-  {name:'C4',freq:261.6256},{name:'C#4',freq:277.1826},{name:'D4',freq:293.6648},
-  {name:'D#4',freq:311.1270},{name:'E4',freq:329.6276},{name:'F4',freq:349.2282},
-  {name:'F#4',freq:369.9944},{name:'G4',freq:391.9954},{name:'G#4',freq:415.3047},
-  {name:'A4',freq:440.0000},{name:'A#4',freq:466.1638},{name:'B4',freq:493.8833}
+  130.81,138.59,146.83,155.56,164.81,174.61,184.99,195.99,207.65,220.00,233.08,246.94,
+  261.63,277.18,293.66,311.13,329.63,349.23,369.99,391.99,415.30,440.00,466.16,493.88
 ];
 
-/* بناء لوحة مفاتيح مرئية */
 const keyboard = document.getElementById('keyboard');
-const whiteNotes = ['C','D','E','F','G','A','B'];
-let keys = []; // store DOM and data
+const keys = [];
+
 function buildKeyboard(){
-  keyboard.innerHTML = '';
-  // We'll create 24 semitones (C3-B4)
-  const whiteOrder = [0,2,4,5,7,9,11];
-  const octaveCount = 2; // produces C3..B4
-  let index = 0;
-  for(let i=0;i< (12*octaveCount); i++){
-    const note = baseNotes[i];
-    const isSharp = note.name.includes('#');
+  keyboard.innerHTML='';
+  const whiteOrder = ['C','D','E','F','G','A','B'];
+  let whiteIndex = 0;
+  baseNotes.forEach((freq,i)=>{
+    const isSharp = [1,3,6,8,10,13,15,18,20,22].includes(i);
     if(!isSharp){
       const key = document.createElement('div');
       key.className='key white';
-      key.dataset.index = i;
-      key.textContent = note.name;
+      key.dataset.index=i;
+      key.textContent=whiteOrder[whiteIndex%7];
       keyboard.appendChild(key);
-      keys.push({el:key, note:note, type:'white'});
+      keys.push({el:key,freq:freq});
+      whiteIndex++;
     }
-  }
-  // add black keys absolutely
-  // we must position them relative to whites
+  });
+  // add black keys
   const whiteEls = Array.from(document.querySelectorAll('.key.white'));
-  whiteEls.forEach((wEl, wi)=>{
-    const idx = wi;
-    // place certain black keys between some whites
-    const mapping = [0,1,3,4,5]; // positions of black relative to group
-    // compute whether next semitone is sharp
-    const baseIndex = idx; // index in whites
-    // find semitone index for this white
-    let semitoneIdx = 0;
-    // calculate semitone index by mapping white index to semitone:
-    // white indices map to semitones: 0->0(C),1->2(D),2->4(E),3->5(F)...
-    const group = Math.floor(idx/7);
-    const posInGroup = idx%7;
-    const semitoneStarts = [0,2,4,5,7,9,11];
-    semitoneIdx = group*12 + semitoneStarts[posInGroup];
-    // check if next semitone exists and should be black (not between E-F and B-C)
-    const next = semitoneIdx+1;
-    if(next < baseNotes.length){
-      const nextName = baseNotes[next].name;
-      if(nextName.includes('#')){
-        const bEl = document.createElement('div');
-        bEl.className='key black';
-        bEl.dataset.index = next;
-        bEl.textContent = baseNotes[next].name;
-        // position absolute using offsetLeft
-        // append to keyboard and then position
-        keyboard.appendChild(bEl);
-        // position later after DOM paint
-        keys.push({el:bEl, note:baseNotes[next], type:'black'});
-      }
+  whiteEls.forEach((wEl,i)=>{
+    const blackIdx = [0,1,3,4,5,7,8,10,11,12,14,15].includes(i)?i+1:null;
+    if(blackIdx!==null && blackIdx<baseNotes.length){
+      const bEl = document.createElement('div');
+      bEl.className='key black';
+      bEl.dataset.index=blackIdx;
+      bEl.textContent='#';
+      keyboard.appendChild(bEl);
+      keys.push({el:bEl,freq:baseNotes[blackIdx]});
+      setTimeout(()=>bEl.style.left=(wEl.offsetLeft + wEl.offsetWidth*0.75)+'px',0);
     }
   });
-  // after added, position black keys above whites
-  setTimeout(()=>positionBlackKeys(),0);
 }
 
-function positionBlackKeys(){
-  const whiteEls = Array.from(document.querySelectorAll('.key.white'));
-  const blackEls = Array.from(document.querySelectorAll('.key.black'));
-  whiteEls.forEach((wEl, i)=>{
-    // size white widths evenly
-    const total = whiteEls.length;
-    const wWidth = keyboard.clientWidth / total;
-    wEl.style.width = wWidth + 'px';
-    wEl.style.flex = '0 0 '+wWidth+'px';
-  });
-  blackEls.forEach(bEl=>{
-    const idx = parseInt(bEl.dataset.index);
-    // find position by mapping semitone index to approximate white index
-    // find left of nearest white with lower semitone
-    let left=0;
-    // find first white with semitone < idx
-    const whites = Array.from(document.querySelectorAll('.key.white'));
-    let accum=0;
-    for(let j=0;j<whites.length;j++){
-      const w = whites[j];
-      const name = w.textContent;
-      // derive semitone index of this white
-      const si = baseNotes.findIndex(n=>n.name===name);
-      if(si < idx){
-        const rect = w.getBoundingClientRect();
-        left = rect.left - keyboard.getBoundingClientRect().left + rect.width - (rect.width*0.25);
-      }
-    }
-    bEl.style.left = left + 'px';
-  });
-}
-
-/* أصوات - voice management */
-const activeVoices = new Map();
-
-function playNote(noteIndex, velocity=1){
-  const note = baseNotes[noteIndex];
-  if(!note) return;
-  // create node group
-  const outGain = ctxAudio.createGain();
-  outGain.gain.value = 0;
-  outGain.connect(master);
-
-  // vibrato LFO
-  const lfo = ctxAudio.createOscillator();
-  const lfoGain = ctxAudio.createGain();
-  lfo.type = 'sine';
-  lfo.frequency.value = parseFloat(vibRate.value);
-  lfoGain.gain.value = parseFloat(vibDepth.value) * 0.01;
-  lfo.connect(lfoGain);
-
-  // drawbars harmonic additive synthesis
-  const harmonics = Array.from(dbSliders).map(s=>parseFloat(s.value)); // [h1,h2,...]
-  const baseFreq = note.freq;
-  const oscNodes = [];
-  harmonics.forEach((g,hIndex)=>{
-    if(g <= 0.001) return;
-    const osc = ctxAudio.createOscillator();
-    const oscGain = ctxAudio.createGain();
-    osc.type = waveType.value; // global wave type
-    osc.frequency.value = baseFreq * (hIndex+1);
-    // apply harmonic gain
-    oscGain.gain.value = g * velocity * parseFloat(velGain.value) * 0.6;
-    osc.connect(oscGain);
-    oscGain.connect(outGain);
-    oscNodes.push({osc, oscGain});
-  });
-
-  // connect lfo to outGain detune by small amount (vibrato)
-  lfoGain.connect(outGain.gain); // subtle amplitude vibrato (more organ-like)
-  lfo.start();
-
-  // ADSR simple: attack & release
-  const now = ctxAudio.currentTime;
-  const attack = parseFloat(attackEl.value)/1000;
-  const release = parseFloat(releaseEl.value)/1000;
-  if(sustainChk.checked){
-    // sustain: ramp to sustain level then hold
-    outGain.gain.cancelScheduledValues(now);
-    outGain.gain.setValueAtTime(0, now);
-    outGain.gain.linearRampToValueAtTime(1.0, now + (attack || 0.01));
-  } else {
-    outGain.gain.cancelScheduledValues(now);
-    outGain.gain.setValueAtTime(0, now);
-    outGain.gain.linearRampToValueAtTime(1.0, now + (attack || 0.01));
-  }
-
-  // start oscillators
-  oscNodes.forEach(o => o.osc.start());
-
-  // store voice
-  activeVoices.set(noteIndex, {outGain, oscNodes, lfo, lfoGain, startedAt:now, release});
-
-  // visual highlight
-  markKeyActive(noteIndex, true);
-}
-
-/* stop note */
-function stopNote(noteIndex){
-  const voice = activeVoices.get(noteIndex);
-  if(!voice) return;
-  const now = ctxAudio.currentTime;
-  const rel = voice.release || 0.18;
-  voice.outGain.gain.cancelScheduledValues(now);
-  voice.outGain.gain.setValueAtTime(voice.outGain.gain.value, now);
-  voice.outGain.gain.linearRampToValueAtTime(0, now + rel);
-  // stop oscillators after release
-  setTimeout(()=>{
-    voice.oscNodes.forEach(o=>{
-      try{o.osc.stop()}catch(e){}
-    });
-    try{voice.lfo.stop()}catch(e){}
-    voice.outGain.disconnect();
-  }, (rel + 0.05)*1000);
-  activeVoices.delete(noteIndex);
-  markKeyActive(noteIndex, false);
-}
-
-/* visual helpers */
-function markKeyActive(semitoneIndex, on){
-  // find matching DOM key by data-index
-  const matched = Array.from(document.querySelectorAll('.key')).find(k=>parseInt(k.dataset.index)===semitoneIndex);
-  if(matched){
-    if(on) matched.classList.add('active'); else matched.classList.remove('active');
-  }
-}
-
-/* events: mouse & touch on keys */
-function attachKeyEvents(){
-  // every key element has dataset.index
-  document.querySelectorAll('.key').forEach(k=>{
-    const idx = parseInt(k.dataset.index);
-    k.addEventListener('mousedown', e=>{
-      e.preventDefault();
-      triggerNoteDown(idx);
-    });
-    k.addEventListener('mouseup', e=>{
-      e.preventDefault();
-      triggerNoteUp(idx);
-    });
-    k.addEventListener('mouseleave', e=>{
-      e.preventDefault();
-      triggerNoteUp(idx);
-    });
-    // touch
-    k.addEventListener('touchstart', e=>{
-      e.preventDefault();
-      triggerNoteDown(idx);
-    }, {passive:false});
-    k.addEventListener('touchend', e=>{
-      e.preventDefault();
-      triggerNoteUp(idx);
-    });
-  });
-}
-
-/* keyboard mapping (Q.. etc) */
-const keyMap = {
-  // map common QWERTY to notes C3..B4
-  // row: Z S X D C V G B H N J M , etc - but we'll use keyboard row for simplicity
-  'a':0,'w':1,'s':2,'e':3,'d':4,'f':5,'t':6,'g':7,'y':8,'h':9,'u':10,'j':11,
-  'k':12,'o':13,'l':14,'p':15,';':16,"'":17
-};
-const pressedKeys = new Set();
-window.addEventListener('keydown',(e)=>{
-  const k = e.key.toLowerCase();
-  if(keyMap.hasOwnProperty(k) && !pressedKeys.has(k)){
-    pressedKeys.add(k);
-    const idx = keyMap[k];
-    triggerNoteDown(idx);
-  }
-  // space for bass note (C2 lower)
-  if(e.code === 'Space' && !pressedKeys.has('space')){
-    pressedKeys.add('space');
-    // play a lower C (C2 ~65Hz) by adding a special voice
-    // we treat index 100 as bass placeholder
-    triggerCustomBass();
-  }
-});
-window.addEventListener('keyup',(e)=>{
-  const k = e.key.toLowerCase();
-  if(keyMap.hasOwnProperty(k)){
-    pressedKeys.delete(k);
-    const idx = keyMap[k];
-    triggerNoteUp(idx);
-  }
-  if(e.code === 'Space'){
-    pressedKeys.delete('space');
-    stopCustomBass();
-  }
-});
-
-/* trigger helpers and recording */
-let recording = false;
-let recordStartTime = 0;
-let recordedEvents = []; // {type:'down'|'up', idx, t}
-
-function triggerNoteDown(idx){
-  // play
-  playNote(idx, 1.0);
-  if(recording){
-    recordedEvents.push({type:'down', idx, t: performance.now() - recordStartTime});
-  }
-}
-function triggerNoteUp(idx){
-  stopNote(idx);
-  if(recording){
-    recordedEvents.push({type:'up', idx, t: performance.now() - recordStartTime});
-  }
-}
-
-/* custom bass for space */
-let bassVoiceKey = null;
-function triggerCustomBass(){
-  // synth lower sine
-  const freq = 65.41; // C2
-  const osc = ctxAudio.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-  const g = ctxAudio.createGain();
-  g.gain.value = 0.5;
-  osc.connect(g); g.connect(master);
-  osc.start();
-  bassVoiceKey = {osc,g};
-}
-function stopCustomBass(){
-  if(!bassVoiceKey) return;
-  bassVoiceKey.g.gain.linearRampToValueAtTime(0, ctxAudio.currentTime + 0.15);
-  setTimeout(()=>{try{bassVoiceKey.osc.stop()}catch(e){} bassVoiceKey=null},200);
-}
-
-/* recording controls */
-const recBtn = document.getElementById('recBtn');
-const recDot = document.getElementById('recDot');
-const playBtn = document.getElementById('playBtn');
-const saveButton = document.getElementById('saveBtn');
-recBtn.addEventListener('click', ()=>{
-  if(!recording){
-    // start recording audio stream + events
-    recordedChunks = [];
-    mediaRecorder = new MediaRecorder(dest.stream);
-    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
-    mediaRecorder.onstop = ()=>{/* done */};
-    mediaRecorder.start();
-    recording = true;
-    recordStartTime = performance.now();
-    recordedEvents = [];
-    recDot.classList.add('recording');
-    recBtn.textContent = 'إيقاف التسجيل';
-  } else {
-    // stop
-    mediaRecorder.stop();
-    recording = false;
-    recDot.classList.remove('recording');
-    recBtn.textContent = 'تسجيل';
-  }
-});
-
-/* play recorded events (with audio from recordedChunks if exist) */
-playBtn.addEventListener('click', async ()=>{
-  if(recordedEvents.length===0){ // if nothing recorded, try play last audio blob
-    if(recordedChunks.length>0){
-      const blob = new Blob(recordedChunks, {type:'audio/webm'});
-      const url = URL.createObjectURL(blob);
-      const a = new Audio(url);
-      a.play();
-    }
-    return;
-  }
-  // play events using scheduler
-  // create timeline
-  const startT = performance.now();
-  // clone events
-  const evs = recordedEvents.slice();
-  for(const ev of evs){
-    setTimeout(()=>{
-      if(ev.type==='down') playNote(ev.idx,1.0);
-      else stopNote(ev.idx);
-    }, ev.t);
-  }
-});
-
-/* save WAV from recordedChunks */
-saveButton.addEventListener('click', ()=>{
-  if(recordedChunks.length===0){
-    alert('ما فيش تسجيل صوتي محفوظ بعد');
-    return;
-  }
-  const blob = new Blob(recordedChunks, {type:'audio/webm'});
-  // Convert webm to wav in-browser is complex; we'll offer webm download which works in browsers
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mzyktk_recording.webm';
-  a.click();
-});
-
-/* clear */
-document.getElementById('clearAll').addEventListener('click', ()=>{
-  elements = [];
-  recordedEvents = [];
-  recordedChunks = [];
-  drawAll();
-});
-
-/* draw loop (initial) */
 buildKeyboard();
-attachKeyEvents();
-drawAll();
 
-/* UI bindings for sliders & drawbars - update in real time */
-dbSliders.forEach(s=>{
-  s.addEventListener('input', ()=>{/* nothing else needed, synthesis reads sliders */});
+const activeNotes = new Map();
+
+function playNote(idx){
+  const freq = baseNotes[idx];
+  if(!freq) return;
+  const osc = ctx.createOscillator();
+  osc.type = waveSelect.value;
+  osc.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.value=0;
+  osc.connect(g); g.connect(masterGain);
+  osc.start();
+  const attack=0.01;
+  const release=0.3;
+  g.gain.linearRampToValueAtTime(1,ctx.currentTime+attack);
+  activeNotes.set(idx,{osc,g});
+  // highlight
+  const k = document.querySelector(`.key[data-index="${idx}"]`);
+  if(k) k.classList.add('active');
+}
+
+function stopNote(idx){
+  const note = activeNotes.get(idx);
+  if(note){
+    const g = note.g;
+    g.gain.cancelScheduledValues(ctx.currentTime);
+    g.gain.setValueAtTime(g.gain.value,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
+    setTimeout(()=>note.osc.stop(),350);
+    activeNotes.delete(idx);
+    const k = document.querySelector(`.key[data-index="${idx}"]`);
+    if(k) k.classList.remove('active');
+  }
+}
+
+keys.forEach(k=>{
+  k.el.addEventListener('mousedown',()=>playNote(parseInt(k.el.dataset.index)));
+  k.el.addEventListener('mouseup',()=>stopNote(parseInt(k.el.dataset.index)));
+  k.el.addEventListener('mouseleave',()=>stopNote(parseInt(k.el.dataset.index)));
+  k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(parseInt(k.el.dataset.index))},{passive:false});
+  k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(parseInt(k.el.dataset.index))},{passive:false});
 });
-waveType.addEventListener('change', ()=>{/* new voices will use new type */});
-attackEl.addEventListener('input', ()=>{/* live */});
-releaseEl.addEventListener('input', (
+
+// keyboard events
+const keyMap = {'a':0,'w':1,'s':2,'e':3,'d':4,'f':5,'t':6,'g':7,'y':8,'h':9,'u':10,'j':11,'k':12,'o':13,'l':14,'p':15,';':16,"'":17};
+const pressedKeys = new Set();
+window.addEventListener('keydown',e=>{
+  const k = e.key.toLowerCase();
+  if(keyMap[k]!==undefined && !pressedKeys.has(k)){
+    pressedKeys.add(k);
+    playNote(keyMap[k]);
+  }
+});
+window.addEventListener('keyup',e=>{
+  const k = e.key.toLowerCase();
+  if(keyMap[k]!==undefined){
+    pressedKeys.delete(k);
+    stopNote(keyMap[k]);
+  }
+});
+</script>
+
+</body>
+</html>
