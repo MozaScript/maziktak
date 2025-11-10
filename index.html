@@ -132,20 +132,23 @@ function playNote(freq){
 
 function stopNote(freq){
   const note=activeNotes.get(freq);
-  if(note){
-    if(sustainChk.checked){
-      // الصوت يستمر فترة قصيرة بعد رفع الزر لكن اللون يرجع فورًا
-      note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
-      setTimeout(()=>note.osc.stop(),350);
-    }else{
-      note.gain.gain.cancelScheduledValues(ctx.currentTime);
-      note.gain.gain.setValueAtTime(note.gain.gain.value,ctx.currentTime);
-      note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
-      setTimeout(()=>note.osc.stop(),350);
-    }
-    activeNotes.delete(freq);
-    keys.forEach(k=>{if(k.freq===freq) k.el.classList.remove('active');});
+  if(!note) return;
+  
+  // اللون يرجع فورًا
+  keys.forEach(k=>{if(k.freq===freq) k.el.classList.remove('active');});
+  
+  if(sustainChk.checked){
+    // الصوت يستمر لفترة قصيرة ثم يتوقف
+    note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5);
+    setTimeout(()=>note.osc.stop(),500);
+  } else {
+    // الصوت يقطع فورًا
+    note.gain.gain.cancelScheduledValues(ctx.currentTime);
+    note.gain.gain.setValueAtTime(0,ctx.currentTime);
+    note.osc.stop();
   }
+  
+  activeNotes.delete(freq);
 }
 
 // كيبورد الكمبيوتر
