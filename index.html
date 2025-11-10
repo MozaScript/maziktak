@@ -5,49 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مزيكتك</title>
 <style>
-  body{margin:0;font-family:sans-serif;background:#0f1724;color:#fff;display:flex;flex-direction:column;align-items:center;padding:10px;}
-  h1{color:#ff8a00;margin-bottom:10px;font-family:"Pacifico",cursive;}
-  .keyboard{display:flex;position:relative;width:100%;max-width:1000px;height:200px;margin:10px 0;user-select:none;touch-action:none;}
-  .key.white{
-    flex:1;
-    background:linear-gradient(to bottom,#fff,#ddd);
-    height:100%;
-    border:1px solid #000;
-    position:relative;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    color:#000;
-    font-weight:600;
-    cursor:pointer;
-    box-shadow:0 3px 3px rgba(0,0,0,0.3);
-    border-radius:0 0 6px 6px;
-    z-index:1;
-  }
-  .key.black{
-    width:40px;
-    height:130px;
-    background:linear-gradient(to bottom,#111,#000);
-    color:#fff;
-    position:absolute;
-    z-index:2;
-    top:0;
-    border-radius:4px;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    cursor:pointer;
-    box-shadow:0 3px 6px rgba(0,0,0,0.5);
-    pointer-events:auto;
-  }
-  .key.white.active{background:#ffd89a;}
-  .key.black.active{background:#ffb74d;}
-  .controls{display:flex;flex-wrap:wrap;gap:12px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;}
-  label{font-size:0.85rem;margin-bottom:4px;display:block;}
-  input[type=range]{width:120px;}
-  select, input[type=checkbox], button{background:rgba(255,255,255,0.02);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:6px;border-radius:6px;}
-  button{cursor:pointer;}
-  footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
+body{margin:0;font-family:sans-serif;background:#0f1724;color:#fff;display:flex;flex-direction:column;align-items:center;padding:10px;}
+h1{color:#ff8a00;margin-bottom:10px;font-family:"Pacifico",cursive;}
+.keyboard{position:relative;width:100%;max-width:1000px;height:200px;margin:10px 0;user-select:none;touch-action:none;}
+.key.white{position:relative;float:left;width:calc(100%/14);height:100%;background:#fff;border:1px solid #000;box-shadow:0 3px 3px rgba(0,0,0,0.3);border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;color:#000;font-weight:600;cursor:pointer;z-index:1;}
+.key.white.active{background:#ffd89a;}
+.key.black{position:absolute;width:calc(100%/21);height:130px;background:#111;color:#fff;top:0;border-radius:4px;box-shadow:0 3px 6px rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;cursor:pointer;z-index:2;}
+.key.black.active{background:#ffb74d;}
+.controls{display:flex;flex-wrap:wrap;gap:12px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;}
+label{font-size:0.85rem;margin-bottom:4px;display:block;}
+input[type=range]{width:120px;}
+select,input[type=checkbox],button{background:rgba(255,255,255,0.02);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:6px;border-radius:6px;}
+button{cursor:pointer;}
+footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
@@ -82,52 +52,39 @@
 <script>
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const masterGain = ctx.createGain();
-masterGain.gain.value = 0.6;
+masterGain.gain.value=0.6;
 masterGain.connect(ctx.destination);
 
-const waveSelect = document.getElementById('waveType');
-const masterInput = document.getElementById('masterGain');
-const sustainChk = document.getElementById('sustainChk');
+const waveSelect=document.getElementById('waveType');
+const masterInput=document.getElementById('masterGain');
 
-masterInput.addEventListener('input', e => masterGain.gain.value = parseFloat(e.target.value));
+masterInput.addEventListener('input',e=>masterGain.gain.value=parseFloat(e.target.value));
 
-const baseNotes = [
-  130.81,138.59,146.83,155.56,164.81,174.61,184.99,195.99,207.65,220.00,233.08,246.94,
-  261.63,277.18,293.66,311.13,329.63,349.23,369.99,391.99,415.30,440.00,466.16,493.88
-];
+const whiteNotes = [130.81,146.83,164.81,174.61,196.00,220.00,246.94,261.63,293.66,329.63,349.23,392.00,440.00,493.88];
+const blackNotes = [138.59,155.56,184.99,207.65,233.08,277.18,311.13,369.99,415.30,466.16];
 
-const keyboard = document.getElementById('keyboard');
-const keys = [];
+const keyboard=document.getElementById('keyboard');
+const keys=[];
 
 function buildKeyboard(){
   keyboard.innerHTML='';
-  const whiteOrder = ['C','D','E','F','G','A','B'];
-  let whiteIndex = 0;
-  baseNotes.forEach((freq,i)=>{
-    const isSharp = [1,3,6,8,10,13,15,18,20,22].includes(i);
-    if(!isSharp){
-      const key = document.createElement('div');
-      key.className='key white';
-      key.dataset.index=i;
-      key.textContent=whiteOrder[whiteIndex%7];
-      keyboard.appendChild(key);
-      keys.push({el:key,freq:freq});
-      whiteIndex++;
-    }
+  // white keys
+  whiteNotes.forEach((freq,i)=>{
+    const key=document.createElement('div');
+    key.className='key white';
+    key.dataset.freq=freq;
+    keyboard.appendChild(key);
+    keys.push({el:key,freq:freq});
   });
-  // add black keys
-  const whiteEls = Array.from(document.querySelectorAll('.key.white'));
-  whiteEls.forEach((wEl,i)=>{
-    const blackIdx = [0,1,3,4,5,7,8,10,11,12,14,15].includes(i)?i+1:null;
-    if(blackIdx!==null && blackIdx<baseNotes.length){
-      const bEl = document.createElement('div');
-      bEl.className='key black';
-      bEl.dataset.index=blackIdx;
-      bEl.textContent='#';
-      keyboard.appendChild(bEl);
-      keys.push({el:bEl,freq:baseNotes[blackIdx]});
-      setTimeout(()=>bEl.style.left=(wEl.offsetLeft + wEl.offsetWidth*0.75)+'px',0);
-    }
+  // black keys positions
+  const positions=[0,1,3,4,5,7,8,10,11,12]; // index above white keys
+  positions.forEach((pos,i)=>{
+    const key=document.createElement('div');
+    key.className='key black';
+    key.dataset.freq=blackNotes[i];
+    keyboard.appendChild(key);
+    key.style.left=(keyboard.children[pos].offsetLeft + keyboard.children[pos].offsetWidth*0.65)+'px';
+    keys.push({el:key,freq:blackNotes[i]});
   });
 }
 
@@ -135,63 +92,37 @@ buildKeyboard();
 
 const activeNotes = new Map();
 
-function playNote(idx){
-  const freq = baseNotes[idx];
-  if(!freq) return;
-  const osc = ctx.createOscillator();
-  osc.type = waveSelect.value;
-  osc.frequency.value = freq;
-  const g = ctx.createGain();
+function playNote(freq){
+  if(activeNotes.has(freq)) return;
+  const osc=ctx.createOscillator();
+  osc.type=waveSelect.value;
+  osc.frequency.value=freq;
+  const g=ctx.createGain();
   g.gain.value=0;
   osc.connect(g); g.connect(masterGain);
   osc.start();
-  const attack=0.01;
-  const release=0.3;
-  g.gain.linearRampToValueAtTime(1,ctx.currentTime+attack);
-  activeNotes.set(idx,{osc,g});
-  // highlight
-  const k = document.querySelector(`.key[data-index="${idx}"]`);
-  if(k) k.classList.add('active');
+  g.gain.linearRampToValueAtTime(1,ctx.currentTime+0.01);
+  activeNotes.set(freq,{osc,g});
 }
 
-function stopNote(idx){
-  const note = activeNotes.get(idx);
+function stopNote(freq){
+  const note=activeNotes.get(freq);
   if(note){
-    const g = note.g;
-    g.gain.cancelScheduledValues(ctx.currentTime);
-    g.gain.setValueAtTime(g.gain.value,ctx.currentTime);
-    g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
+    note.gain=note.g;
+    note.gain.gain.cancelScheduledValues(ctx.currentTime);
+    note.gain.gain.setValueAtTime(note.gain.gain.value,ctx.currentTime);
+    note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
     setTimeout(()=>note.osc.stop(),350);
-    activeNotes.delete(idx);
-    const k = document.querySelector(`.key[data-index="${idx}"]`);
-    if(k) k.classList.remove('active');
+    activeNotes.delete(freq);
   }
 }
 
 keys.forEach(k=>{
-  k.el.addEventListener('mousedown',()=>playNote(parseInt(k.el.dataset.index)));
-  k.el.addEventListener('mouseup',()=>stopNote(parseInt(k.el.dataset.index)));
-  k.el.addEventListener('mouseleave',()=>stopNote(parseInt(k.el.dataset.index)));
-  k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(parseInt(k.el.dataset.index))},{passive:false});
-  k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(parseInt(k.el.dataset.index))},{passive:false});
-});
-
-// keyboard events
-const keyMap = {'a':0,'w':1,'s':2,'e':3,'d':4,'f':5,'t':6,'g':7,'y':8,'h':9,'u':10,'j':11,'k':12,'o':13,'l':14,'p':15,';':16,"'":17};
-const pressedKeys = new Set();
-window.addEventListener('keydown',e=>{
-  const k = e.key.toLowerCase();
-  if(keyMap[k]!==undefined && !pressedKeys.has(k)){
-    pressedKeys.add(k);
-    playNote(keyMap[k]);
-  }
-});
-window.addEventListener('keyup',e=>{
-  const k = e.key.toLowerCase();
-  if(keyMap[k]!==undefined){
-    pressedKeys.delete(k);
-    stopNote(keyMap[k]);
-  }
+  k.el.addEventListener('mousedown',()=>playNote(k.freq));
+  k.el.addEventListener('mouseup',()=>stopNote(k.freq));
+  k.el.addEventListener('mouseleave',()=>stopNote(k.freq));
+  k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(k.freq)},{passive:false});
+  k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(k.freq)},{passive:false});
 });
 </script>
 
