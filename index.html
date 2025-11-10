@@ -51,14 +51,14 @@ footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
 <script>
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const masterGain = ctx.createGain();
-masterGain.gain.value=0.6;
+masterGain.gain.value = 0.6;
 masterGain.connect(ctx.destination);
 
-const waveSelect=document.getElementById('waveType');
-const masterInput=document.getElementById('masterGain');
-const sustainChk=document.getElementById('sustainChk');
+const waveSelect = document.getElementById('waveType');
+const masterInput = document.getElementById('masterGain');
+const sustainChk = document.getElementById('sustainChk');
 
-masterInput.addEventListener('input',e=>masterGain.gain.value=parseFloat(e.target.value));
+masterInput.addEventListener('input', e => masterGain.gain.value = parseFloat(e.target.value));
 
 const whiteKeys = [
   {note:'C1',freq:130.81,key:'a'}, {note:'D1',freq:146.83,key:'s'}, {note:'E1',freq:164.81,key:'d'},
@@ -72,79 +72,80 @@ const blackKeys = [
   {note:'D#2',freq:311.13,key:'#u'}, {note:'F#2',freq:369.99,key:'#i'}, {note:'G#2',freq:415.30,key:'#o'}, {note:'A#2',freq:466.16,key:'#p'}
 ];
 
-const keyboardDiv=document.getElementById('keyboard');
-const keys=[];
+const keyboardDiv = document.getElementById('keyboard');
+const keys = [];
 const activeNotes = new Map();
 
-function buildKeyboard(){
-  keyboardDiv.innerHTML='';
-  keys.length=0;
-  const totalWhite=whiteKeys.length;
-  const whiteWidth=(keyboardDiv.clientWidth/totalWhite)+'px';
+function buildKeyboard() {
+  keyboardDiv.innerHTML = '';
+  keys.length = 0;
+  const totalWhite = whiteKeys.length;
+  const whiteWidth = (keyboardDiv.clientWidth/totalWhite) + 'px';
   whiteKeys.forEach((k,i)=>{
-    const key=document.createElement('div');
-    key.className='key white';
-    key.dataset.freq=k.freq;
-    key.dataset.kb=k.key;
-    key.textContent=k.note;
-    key.style.width=whiteWidth;
+    const key = document.createElement('div');
+    key.className = 'key white';
+    key.dataset.freq = k.freq;
+    key.dataset.kb = k.key;
+    key.textContent = k.note;
+    key.style.width = whiteWidth;
     keyboardDiv.appendChild(key);
     keys.push({el:key,freq:k.freq,kb:k.key});
   });
   const positions=[0,1,3,4,5,7,8,10,11,12];
   blackKeys.forEach((k,i)=>{
-    const key=document.createElement('div');
-    key.className='key black';
-    key.dataset.freq=k.freq;
-    key.dataset.kb=k.key;
-    key.textContent=k.note;
-    const wEl=keyboardDiv.children[positions[i]];
-    key.style.left=(wEl.offsetLeft + wEl.offsetWidth*0.65)+'px';
+    const key = document.createElement('div');
+    key.className = 'key black';
+    key.dataset.freq = k.freq;
+    key.dataset.kb = k.key;
+    key.textContent = k.note;
+    const wEl = keyboardDiv.children[positions[i]];
+    key.style.left = (wEl.offsetLeft + wEl.offsetWidth*0.65) + 'px';
     keyboardDiv.appendChild(key);
     keys.push({el:key,freq:k.freq,kb:k.key});
   });
   attachKeyEvents();
 }
 
-function attachKeyEvents(){
+function attachKeyEvents() {
   keys.forEach(k=>{
     k.el.addEventListener('mousedown',()=>playNote(k.freq));
     k.el.addEventListener('mouseup',()=>stopNote(k.freq));
     k.el.addEventListener('mouseleave',()=>stopNote(k.freq));
-    k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(k.freq)},{passive:false});
-    k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(k.freq)},{passive:false});
+    k.el.addEventListener('touchstart', e=>{e.preventDefault(); playNote(k.freq)},{passive:false});
+    k.el.addEventListener('touchend', e=>{e.preventDefault(); stopNote(k.freq)},{passive:false});
   });
 }
 
-function playNote(freq){
+function playNote(freq) {
   if(activeNotes.has(freq)) return;
-  const osc=ctx.createOscillator();
-  osc.type=waveSelect.value;
-  osc.frequency.value=freq;
-  const g=ctx.createGain();
-  g.gain.value=0;
-  osc.connect(g); g.connect(masterGain);
+  const osc = ctx.createOscillator();
+  osc.type = waveSelect.value;
+  osc.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.value = 0;
+  osc.connect(g);
+  g.connect(masterGain);
   osc.start();
   g.gain.linearRampToValueAtTime(1,ctx.currentTime+0.01);
   activeNotes.set(freq,{osc,g});
   keys.forEach(k=>{if(k.freq===freq) k.el.classList.add('active');});
 }
 
-function stopNote(freq){
-  const note=activeNotes.get(freq);
+function stopNote(freq) {
+  const note = activeNotes.get(freq);
   if(!note) return;
   
   // اللون يرجع فورًا
   keys.forEach(k=>{if(k.freq===freq) k.el.classList.remove('active');});
   
   if(sustainChk.checked){
-    // الصوت يستمر لفترة قصيرة ثم يتوقف
-    note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5);
+    // الصوت يستمر لفترة محددة ثم يتوقف
+    note.g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5);
     setTimeout(()=>note.osc.stop(),500);
   } else {
     // الصوت يقطع فورًا
-    note.gain.gain.cancelScheduledValues(ctx.currentTime);
-    note.gain.gain.setValueAtTime(0,ctx.currentTime);
+    note.g.gain.cancelScheduledValues(ctx.currentTime);
+    note.g.gain.setValueAtTime(0,ctx.currentTime);
     note.osc.stop();
   }
   
@@ -152,13 +153,13 @@ function stopNote(freq){
 }
 
 // كيبورد الكمبيوتر
-document.addEventListener('keydown',e=>{
-  let key=e.key.toLowerCase();
+document.addEventListener('keydown', e=>{
+  let key = e.key.toLowerCase();
   if(e.shiftKey) key='#'+key;
   keys.forEach(k=>{if(k.kb===key) playNote(k.freq);});
 });
-document.addEventListener('keyup',e=>{
-  let key=e.key.toLowerCase();
+document.addEventListener('keyup', e=>{
+  let key = e.key.toLowerCase();
   if(e.shiftKey) key='#'+key;
   keys.forEach(k=>{if(k.kb===key) stopNote(k.freq);});
 });
