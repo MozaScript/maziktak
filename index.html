@@ -7,17 +7,19 @@
 <style>
 body{margin:0;font-family:sans-serif;background:#0f1724;color:#fff;display:flex;flex-direction:column;align-items:center;padding:10px;}
 h1{color:#ff8a00;margin-bottom:10px;font-family:"Pacifico",cursive;}
-.keyboard{position:relative;width:100%;max-width:1000px;height:200px;margin:10px 0;user-select:none;touch-action:none;}
-.key.white{position:relative;float:left;width:calc(100%/14);height:100%;background:linear-gradient(to bottom,#fff,#ddd);border:1px solid #000;box-shadow:0 3px 3px rgba(0,0,0,0.3);border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;color:#000;font-weight:600;cursor:pointer;z-index:1;font-size:14px;}
-.key.white.active{background:#ffd89a;box-shadow:0 2px 2px rgba(0,0,0,0.2);}
-.key.black{position:absolute;width:calc(100%/21);height:130px;background:linear-gradient(to bottom,#111,#000);color:#fff;top:0;border-radius:4px;box-shadow:0 3px 6px rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;cursor:pointer;z-index:2;font-size:12px;pointer-events:auto;}
-.key.black.active{background:#ffb74d;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
-.controls{display:flex;flex-wrap:wrap;gap:12px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;}
+.controls{display:flex;flex-wrap:wrap;gap:12px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:10px;}
 label{font-size:0.85rem;margin-bottom:4px;display:block;}
 input[type=range]{width:120px;}
 select,input[type=checkbox],button{background:rgba(255,255,255,0.02);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:6px;border-radius:6px;}
 button{cursor:pointer;}
 footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
+.keyboard{position:relative;width:100%;max-width:1000px;height:200px;user-select:none;touch-action:none;display:flex;justify-content:flex-start;align-items:flex-start;flex-wrap:nowrap;}
+.key.white{position:relative;background:linear-gradient(to bottom,#fff,#ddd);border:1px solid #000;box-shadow:0 3px 3px rgba(0,0,0,0.3);border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;color:#000;font-weight:600;cursor:pointer;z-index:1;font-size:14px;}
+.key.white.active{background:#ffd89a;box-shadow:0 2px 2px rgba(0,0,0,0.2);}
+.key.black{position:absolute;background:linear-gradient(to bottom,#111,#000);color:#fff;border-radius:4px;box-shadow:0 3px 6px rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;cursor:pointer;z-index:2;font-size:12px;pointer-events:auto;}
+.key.black.active{background:#ffb74d;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
+.keyboard.horizontal{flex-direction:row;height:200px;}
+.keyboard.vertical{flex-direction:column;height:auto;width:200px;}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
@@ -43,9 +45,13 @@ footer{margin-top:12px;font-size:0.9rem;color:#9fb3d8;}
     <label>Sustain</label>
     <input type="checkbox" id="sustainChk" checked>
   </div>
+  <div>
+    <label>تغيير العرض</label>
+    <button id="toggleOrientation">قلب الكيبورد</button>
+  </div>
 </div>
 
-<div class="keyboard" id="keyboard"></div>
+<div class="keyboard horizontal" id="keyboard"></div>
 
 <footer>استعمل الماوس أو لوحة المفاتيح (مفتاح المسافة للباس)</footer>
 
@@ -57,44 +63,78 @@ masterGain.connect(ctx.destination);
 
 const waveSelect=document.getElementById('waveType');
 const masterInput=document.getElementById('masterGain');
+const toggleBtn=document.getElementById('toggleOrientation');
+const keyboardDiv=document.getElementById('keyboard');
 
 masterInput.addEventListener('input',e=>masterGain.gain.value=parseFloat(e.target.value));
 
-const whiteNotes = [130.81,146.83,164.81,174.61,196.00,220.00,246.94,261.63,293.66,329.63,349.23,392.00,440.00,493.88];
-const blackNotes = [138.59,155.56,184.99,207.65,233.08,277.18,311.13,369.99,415.30,466.16];
-const whiteKeysLabels = ['C','D','E','F','G','A','B','C','D','E','F','G','A','B'];
-const blackKeysLabels = ['C#','D#','F#','G#','A#','C#','D#','F#','G#','A#'];
+const whiteNotes=[130.81,146.83,164.81,174.61,196.00,220.00,246.94,261.63,293.66,329.63,349.23,392.00,440.00,493.88];
+const blackNotes=[138.59,155.56,184.99,207.65,233.08,277.18,311.13,369.99,415.30,466.16];
+const whiteKeysLabels=['C','D','E','F','G','A','B','C','D','E','F','G','A','B'];
+const blackKeysLabels=['C#','D#','F#','G#','A#','C#','D#','F#','G#','A#'];
 
-const keyboard=document.getElementById('keyboard');
+let horizontal=true;
+toggleBtn.addEventListener('click',()=>{
+  horizontal=!horizontal;
+  if(horizontal){
+    keyboardDiv.classList.add('horizontal'); keyboardDiv.classList.remove('vertical');
+  } else {
+    keyboardDiv.classList.add('vertical'); keyboardDiv.classList.remove('horizontal');
+  }
+  buildKeyboard();
+});
+
 const keys=[];
+const activeNotes = new Map();
 
 function buildKeyboard(){
-  keyboard.innerHTML='';
+  keyboardDiv.innerHTML='';
+  keys.length=0;
+  const totalWhite = whiteNotes.length;
+  const whiteWidth = horizontal ? (keyboardDiv.clientWidth/totalWhite)+'px' : '100%';
+  const whiteHeight = horizontal ? '100%' : (keyboardDiv.clientHeight/totalWhite)+'px';
   // white keys
   whiteNotes.forEach((freq,i)=>{
     const key=document.createElement('div');
     key.className='key white';
     key.dataset.freq=freq;
     key.textContent=whiteKeysLabels[i];
-    keyboard.appendChild(key);
+    if(horizontal) key.style.width=whiteWidth;
+    else key.style.height=whiteHeight;
+    keyboardDiv.appendChild(key);
     keys.push({el:key,freq:freq});
   });
-  // black keys positions
-  const positions=[0,1,3,4,5,7,8,10,11,12]; // index above white keys
+  // black keys
+  const positions=[0,1,3,4,5,7,8,10,11,12];
   positions.forEach((pos,i)=>{
     const key=document.createElement('div');
     key.className='key black';
     key.dataset.freq=blackNotes[i];
     key.textContent=blackKeysLabels[i];
-    keyboard.appendChild(key);
-    key.style.left=(keyboard.children[pos].offsetLeft + keyboard.children[pos].offsetWidth*0.65)+'px';
+    if(horizontal){
+      const wEl=keyboardDiv.children[pos];
+      key.style.left=(wEl.offsetLeft + wEl.offsetWidth*0.65)+'px';
+      key.style.height='130px';
+    } else {
+      const wEl=keyboardDiv.children[pos];
+      key.style.top=(wEl.offsetTop + wEl.offsetHeight*0.65)+'px';
+      key.style.width='60px';
+    }
+    keyboardDiv.appendChild(key);
     keys.push({el:key,freq:blackNotes[i]});
   });
+  attachKeyEvents();
 }
 
-buildKeyboard();
-
-const activeNotes = new Map();
+function attachKeyEvents(){
+  keys.forEach(k=>{
+    k.el.addEventListener('mousedown',()=>playNote(k.freq));
+    k.el.addEventListener('mouseup',()=>stopNote(k.freq));
+    k.el.addEventListener('mouseleave',()=>stopNote(k.freq));
+    k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(k.freq)},{passive:false});
+    k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(k.freq)},{passive:false});
+  });
+}
 
 function playNote(freq){
   if(activeNotes.has(freq)) return;
@@ -107,10 +147,7 @@ function playNote(freq){
   osc.start();
   g.gain.linearRampToValueAtTime(1,ctx.currentTime+0.01);
   activeNotes.set(freq,{osc,g});
-  // highlight
-  keys.forEach(k=>{
-    if(k.freq===freq) k.el.classList.add('active');
-  });
+  keys.forEach(k=>{if(k.freq===freq) k.el.classList.add('active');});
 }
 
 function stopNote(freq){
@@ -122,19 +159,11 @@ function stopNote(freq){
     note.gain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.3);
     setTimeout(()=>note.osc.stop(),350);
     activeNotes.delete(freq);
-    keys.forEach(k=>{
-      if(k.freq===freq) k.el.classList.remove('active');
-    });
+    keys.forEach(k=>{if(k.freq===freq) k.el.classList.remove('active');});
   }
 }
 
-keys.forEach(k=>{
-  k.el.addEventListener('mousedown',()=>playNote(k.freq));
-  k.el.addEventListener('mouseup',()=>stopNote(k.freq));
-  k.el.addEventListener('mouseleave',()=>stopNote(k.freq));
-  k.el.addEventListener('touchstart',e=>{e.preventDefault(); playNote(k.freq)},{passive:false});
-  k.el.addEventListener('touchend',e=>{e.preventDefault(); stopNote(k.freq)},{passive:false});
-});
+buildKeyboard();
 </script>
 
 </body>
